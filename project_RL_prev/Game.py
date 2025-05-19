@@ -13,10 +13,8 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
 
-
 Point = namedtuple('Point', 'x, y')
 
-# rgb colors
 WHITE = (255, 255, 255)
 RED = (200, 0, 0)
 BLUE1 = (0, 0, 255)
@@ -26,9 +24,13 @@ GRAY1 = (100, 100, 100)
 GRAY2 = (150, 150, 150)
 
 BLOCK_SIZE = 20
-SPEED = 200
+PADDING_SIZE = 4
 MAX_OBSTACLES = 50
+SPEED = 200
 
+SCALE = 5
+POSITIVE_REWARD = 12
+NEGATIVE_REWARD = -10
 
 class SnakeGameAI:
 
@@ -103,15 +105,15 @@ class SnakeGameAI:
         
 
         if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
-            return -10 , True , self.score # reward, is_game_over , self.score
+            return NEGATIVE_REWARD , True , self.score # reward, is_game_over , self.score
         
         reward = 0
         dist_delta = (dist_old - dist_new) / self.max_distance
-        reward += dist_delta * 5  # weight factor
+        reward += dist_delta * SCALE  # weight factor
         
         if self.head == self.food:
             self.score += 1
-            reward = 12
+            reward = POSITIVE_REWARD
             self._place_food()
         else:
             self.snake.pop()
@@ -139,13 +141,16 @@ class SnakeGameAI:
 
         for pt in self.snake:
             pygame.draw.rect(self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, BLUE2, pygame.Rect(pt.x+4, pt.y+4, 12, 12))
+            pygame.draw.rect(self.display, BLUE2, pygame.Rect(pt.x + PADDING_SIZE, pt.y + PADDING_SIZE,
+                                                              BLOCK_SIZE - PADDING_SIZE*2,
+                                                              BLOCK_SIZE - PADDING_SIZE*2))
 
         for pt in self.obstacles:
-            pygame.draw.rect(self.display, GRAY1, pygame.Rect(
-                pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
-            pygame.draw.rect(self.display, GRAY2,
-                             pygame.Rect(pt.x+4, pt.y+4, 12, 12))
+            pygame.draw.rect(self.display, GRAY1,
+                             pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE))
+            pygame.draw.rect(self.display, GRAY2, pygame.Rect(pt.x + PADDING_SIZE, pt.y + PADDING_SIZE,
+                                                              BLOCK_SIZE - PADDING_SIZE*2,
+                                                              BLOCK_SIZE - PADDING_SIZE*2))
 
         pygame.draw.rect(self.display, RED, pygame.Rect(
             self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
